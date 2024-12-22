@@ -1,0 +1,186 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Gestion des lieux{% endblock %}
+
+{% block admin_title %}Gestion des lieux{% endblock %}
+
+{% block admin_actions %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlaceModal">
+            <i class="fas fa-plus me-1"></i> Ajouter un lieu
+        </button>
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Adresse</th>
+                    <th>Ville</th>
+                    <th>Code postal</th>
+                    <th>Pays</th>
+                    <th>Propriétaire</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for place in places %}
+                    <tr>
+                        <td>{{ place.id }}</td>
+                        <td>{{ place.name }}</td>
+                        <td>{{ place.description|slice(0, 50) }}...</td>
+                        <td>{{ place.address }}</td>
+                        <td>{{ place.city }}</td>
+                        <td>{{ place.zipCode }}</td>
+                        <td>{{ place.country }}</td>
+                        <td>{{ place.owner.name }} {{ place.owner.lastname }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-primary" title="Éditer"
+                                        data-bs-toggle="modal" data-bs-target="#editPlace{{ place.id }}Modal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#deletePlace{{ place.id }}Modal">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# Modal d'édition #}
+                    <div class="modal fade" id="editPlace{{ place.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_places_edit', {'id': place.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier le lieu</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="name{{ place.id }}" class="form-label">Nom</label>
+                                            <input type="text" class="form-control" id="name{{ place.id }}" name="name" value="{{ place.name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description{{ place.id }}" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description{{ place.id }}" name="description" rows="3" required>{{ place.description }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="address{{ place.id }}" class="form-label">Adresse</label>
+                                            <input type="text" class="form-control" id="address{{ place.id }}" name="address" value="{{ place.address }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="city{{ place.id }}" class="form-label">Ville</label>
+                                            <input type="text" class="form-control" id="city{{ place.id }}" name="city" value="{{ place.city }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="zipCode{{ place.id }}" class="form-label">Code postal</label>
+                                            <input type="text" class="form-control" id="zipCode{{ place.id }}" name="zipCode" value="{{ place.zipCode }}" required maxlength="10">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="country{{ place.id }}" class="form-label">Pays</label>
+                                            <input type="text" class="form-control" id="country{{ place.id }}" name="country" value="{{ place.country }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ place.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Modal de suppression #}
+                    <div class="modal fade" id="deletePlace{{ place.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_places_delete', {'id': place.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmer la suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir supprimer le lieu <strong>{{ place.name }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ place.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Modal d'ajout #}
+    <div class="modal fade" id="addPlaceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ path('admin_places_new') }}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un lieu</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newName" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="newName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="newDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newAddress" class="form-label">Adresse</label>
+                            <input type="text" class="form-control" id="newAddress" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newCity" class="form-label">Ville</label>
+                            <input type="text" class="form-control" id="newCity" name="city" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newZipCode" class="form-label">Code postal</label>
+                            <input type="text" class="form-control" id="newZipCode" name="zipCode" required maxlength="10">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newCountry" class="form-label">Pays</label>
+                            <input type="text" class="form-control" id="newCountry" name="country" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_place') }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

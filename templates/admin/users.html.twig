@@ -1,0 +1,199 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Gestion des utilisateurs{% endblock %}
+
+{% block admin_title %}Gestion des utilisateurs{% endblock %}
+
+{% block admin_actions %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="fas fa-plus me-1"></i> Ajouter un utilisateur
+        </button>
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Rôles</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.lastname }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% for role in user.roles %}
+                                {% set badgeClass = role == 'ROLE_ADMIN' ? 'danger' : (role == 'ROLE_BANNED' ? 'dark' : 'primary') %}
+                                <span class="badge bg-{{ badgeClass }} me-1">{{ role|replace({'ROLE_': ''}) }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-primary" title="Éditer"
+                                        data-bs-toggle="modal" data-bs-target="#editUser{{ user.id }}Modal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% if user.id != app.user.id %}
+                                    <button type="button" class="btn btn-danger" title="Supprimer"
+                                            data-bs-toggle="modal" data-bs-target="#deleteUser{{ user.id }}Modal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# Modal d'édition #}
+                    <div class="modal fade" id="editUser{{ user.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_users_edit', {'id': user.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier l'utilisateur</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="name{{ user.id }}" class="form-label">Nom</label>
+                                            <input type="text" class="form-control" id="name{{ user.id }}" name="name" value="{{ user.name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="lastname{{ user.id }}" class="form-label">Prénom</label>
+                                            <input type="text" class="form-control" id="lastname{{ user.id }}" name="lastname" value="{{ user.lastname }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="email{{ user.id }}" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email{{ user.id }}" name="email" value="{{ user.email }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="password{{ user.id }}" class="form-label">Nouveau mot de passe (laisser vide pour ne pas modifier)</label>
+                                            <input type="password" class="form-control" id="password{{ user.id }}" name="password">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label d-block">Rôles</label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" name="roles[]" value="ROLE_ADMIN"
+                                                       id="roleAdmin{{ user.id }}" {% if 'ROLE_ADMIN' in user.roles %}checked{% endif %}>
+                                                <label class="form-check-label" for="roleAdmin{{ user.id }}">Admin</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox" name="roles[]" value="ROLE_BANNED"
+                                                       id="roleBanned{{ user.id }}" {% if 'ROLE_BANNED' in user.roles %}checked{% endif %}>
+                                                <label class="form-check-label" for="roleBanned{{ user.id }}">Banni</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ user.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Modal de suppression #}
+                    <div class="modal fade" id="deleteUser{{ user.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_users_delete', {'id': user.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmer la suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.name }} {{ user.lastname }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Modal d'ajout #}
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ path('admin_users_new') }}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un utilisateur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newName" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="newName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newLastname" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="newLastname" name="lastname" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newEmail" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" id="newPassword" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block">Rôles</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="roles[]" value="ROLE_ADMIN" id="newRoleAdmin">
+                                <label class="form-check-label" for="newRoleAdmin">Admin</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="roles[]" value="ROLE_USER" id="newRoleUser" checked>
+                                <label class="form-check-label" for="newRoleUser">Utilisateur</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="roles[]" value="ROLE_BANNED" id="newRoleBanned">
+                                <label class="form-check-label" for="newRoleBanned">Banni</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_user') }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

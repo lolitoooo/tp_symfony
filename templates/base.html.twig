@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .hero-section {
+                background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+                color: white;
+                padding: 4rem 0;
+                border-radius: 15px;
+                margin: 2rem 0;
+            }
+            .feature-card {
+                background: white;
+                border-radius: 10px;
+                padding: 2rem;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease;
+                height: 100%;
+            }
+            .feature-card:hover {
+                transform: translateY(-5px);
+            }
+            .feature-icon {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+                color: #000DFF;
+            }
+            .navbar {
+                background: white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .btn-primary {
+                background: #000DFF;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                border-radius: 25px;
+            }
+            .btn-primary:hover {
+                background: #0000CC;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            .btn-secondary {
+                background: #6c757d;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                border-radius: 25px;
+            }
+            .btn-secondary:hover {
+                background: #5a6268;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+        </style>
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}
+            <!-- Bootstrap JS Bundle with Popper -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        {% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{{ path('app_home') }}">Event Manager</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        {% if app.user %}
+                            {% if not is_granted('ROLE_BANNED') %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_search') }}">
+                                        <i class="fas fa-search"></i> Rechercher
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_event_index') }}">Événements</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_activity_index') }}">Activités</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_place_index') }}">Lieux</a>
+                                </li>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_category_index') }}">Catégories</a>
+                                    </li>
+                                {% endif %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_my_events') }}">Mes événements</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_my_places') }}">Mes lieux</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ path('app_my_activities') }}">Mes activités</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if app.user %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ app.user.name }} {{ app.user.lastname }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li>
+                                        <span class="dropdown-item-text">
+                                            <small class="text-muted">Connecté en tant que</small><br>
+                                            <strong>{{ app.user.name }} {{ app.user.lastname }}</strong>
+                                        </span>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_profile') }}">
+                                            <i class="fas fa-user-circle me-2"></i>Mon profil
+                                        </a>
+                                    </li>
+
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <h6 class="dropdown-header">Administration</h6>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_users') }}">
+                                                <i class="fas fa-users-cog me-2"></i>Gérer les utilisateurs
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_events') }}">
+                                                <i class="fas fa-calendar-alt me-2"></i>Gérer les événements
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_activities') }}">
+                                                <i class="fas fa-running me-2"></i>Gérer les activités
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_places') }}">
+                                                <i class="fas fa-map-marker-alt me-2"></i>Gérer les lieux
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('admin_categories') }}">
+                                                <i class="fas fa-tags me-2"></i>Gérer les catégories
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{{ path('app_logout') }}">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('app_login') }}">Connexion</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('app_register') }}">Inscription</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            {% block body %}{% endblock %}
+        </main>
+    </body>
+</html>

@@ -1,0 +1,176 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Gestion des événements{% endblock %}
+
+{% block admin_title %}Gestion des événements{% endblock %}
+
+{% block admin_actions %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
+            <i class="fas fa-plus me-1"></i> Ajouter un événement
+        </button>
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Date de début</th>
+                    <th>Date de fin</th>
+                    <th>Lieu</th>
+                    <th>Organisateur</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td>{{ event.id }}</td>
+                        <td>{{ event.title }}</td>
+                        <td>{{ event.description|slice(0, 50) }}...</td>
+                        <td>{{ event.startDate|date('d/m/Y H:i') }}</td>
+                        <td>{{ event.endDate|date('d/m/Y H:i') }}</td>
+                        <td>{{ event.location }}</td>
+                        <td>{{ event.organizer.name }} {{ event.organizer.lastname }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-primary" title="Éditer"
+                                        data-bs-toggle="modal" data-bs-target="#editEvent{{ event.id }}Modal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#deleteEvent{{ event.id }}Modal">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# Modal d'édition #}
+                    <div class="modal fade" id="editEvent{{ event.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_events_edit', {'id': event.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier l'événement</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="title{{ event.id }}" class="form-label">Titre</label>
+                                            <input type="text" class="form-control" id="title{{ event.id }}" name="title" value="{{ event.title }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description{{ event.id }}" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description{{ event.id }}" name="description" rows="3" required>{{ event.description }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="startDate{{ event.id }}" class="form-label">Date de début</label>
+                                            <input type="datetime-local" class="form-control" id="startDate{{ event.id }}" name="startDate" value="{{ event.startDate|date('Y-m-d\\TH:i') }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="endDate{{ event.id }}" class="form-label">Date de fin</label>
+                                            <input type="datetime-local" class="form-control" id="endDate{{ event.id }}" name="endDate" value="{{ event.endDate|date('Y-m-d\\TH:i') }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="location{{ event.id }}" class="form-label">Lieu</label>
+                                            <input type="text" class="form-control" id="location{{ event.id }}" name="location" value="{{ event.location }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ event.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Modal de suppression #}
+                    <div class="modal fade" id="deleteEvent{{ event.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_events_delete', {'id': event.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmer la suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir supprimer l'événement <strong>{{ event.title }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Modal d'ajout #}
+    <div class="modal fade" id="addEventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ path('admin_events_new') }}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un événement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newTitle" class="form-label">Titre</label>
+                            <input type="text" class="form-control" id="newTitle" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="newDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newStartDate" class="form-label">Date de début</label>
+                            <input type="datetime-local" class="form-control" id="newStartDate" name="startDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEndDate" class="form-label">Date de fin</label>
+                            <input type="datetime-local" class="form-control" id="newEndDate" name="endDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newLocation" class="form-label">Lieu</label>
+                            <input type="text" class="form-control" id="newLocation" name="location" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_event') }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

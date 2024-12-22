@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Recherche</h1>
+
+    {{ form_start(form, {'attr': {'class': 'mb-4'}}) }}
+    <div class="row">
+        <div class="col-md-8">
+            {{ form_row(form.query) }}
+        </div>
+        <div class="col-md-3">
+            {{ form_row(form.type) }}
+        </div>
+        <div class="col-md-1">
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    {{ form_end(form) }}
+
+    {% if submitted %}
+        {% if results.events|length > 0 or results.activities|length > 0 or results.places|length > 0 %}
+            {% if results.events|length > 0 %}
+                <h2>Événements</h2>
+                <div class="row">
+                    {% for event in results.events %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ event.title }}</h5>
+                                    <p class="card-text">{{ event.description|slice(0, 100) }}...</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Du {{ event.startDate|date('d/m/Y') }} au {{ event.endDate|date('d/m/Y') }}
+                                        </small>
+                                    </p>
+                                    <a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-primary">
+                                        Voir plus
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if results.activities|length > 0 %}
+                <h2>Activités</h2>
+                <div class="row">
+                    {% for activity in results.activities %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ activity.name }}</h5>
+                                    <p class="card-text">{{ activity.description|slice(0, 100) }}...</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Catégorie: {{ activity.category.name }}
+                                        </small>
+                                    </p>
+                                    <a href="{{ path('app_activity_show', {'id': activity.id}) }}" class="btn btn-primary">
+                                        Voir plus
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if results.places|length > 0 %}
+                <h2>Lieux</h2>
+                <div class="row">
+                    {% for place in results.places %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ place.name }}</h5>
+                                    <p class="card-text">
+                                        <i class="fas fa-map-marker-alt"></i> {{ place.address }}, {{ place.city }}
+                                    </p>
+                                    <a href="{{ path('app_place_show', {'id': place.id}) }}" class="btn btn-primary">
+                                        Voir plus
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                Aucun résultat trouvé pour votre recherche.
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

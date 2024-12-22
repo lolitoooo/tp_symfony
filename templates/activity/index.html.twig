@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des activités{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Liste des activités</h1>
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_activity_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Créer une activité
+            </a>
+        {% endif %}
+    </div>
+
+    {% if activities is empty %}
+        <div class="alert alert-info">
+            Aucune activité n'a été créée pour le moment.
+        </div>
+    {% else %}
+        <div class="row">
+            {% for activity in activities %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <span class="badge bg-primary">{{ activity.category }}</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ activity.name }}</h5>
+                            <p class="card-text">{{ activity.description|slice(0, 100) }}...</p>
+                            <ul class="list-unstyled">
+                                <li>
+                                    <i class="fas fa-clock me-2"></i>{{ activity.duration }} minutes
+                                </li>
+                                <li>
+                                    <i class="fas fa-users me-2"></i>Max {{ activity.maxParticipants }} participants
+                                </li>
+                                <li>
+                                    <i class="fas fa-euro-sign me-2"></i>{{ activity.price|number_format(2, ',', ' ') }} €
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Par {{ activity.organizer.name }}</small>
+                                <a href="{{ path('app_activity_show', {'id': activity.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

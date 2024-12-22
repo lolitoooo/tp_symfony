@@ -1,0 +1,144 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Gestion des catégories{% endblock %}
+
+{% block admin_title %}Gestion des catégories{% endblock %}
+
+{% block admin_actions %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+            <i class="fas fa-plus me-1"></i> Ajouter une catégorie
+        </button>
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                    <tr>
+                        <td>{{ category.id }}</td>
+                        <td>{{ category.name }}</td>
+                        <td>{{ category.description|slice(0, 50) }}...</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-primary" title="Éditer"
+                                        data-bs-toggle="modal" data-bs-target="#editCategory{{ category.id }}Modal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#deleteCategory{{ category.id }}Modal">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# Modal d'édition #}
+                    <div class="modal fade" id="editCategory{{ category.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_categories_edit', {'id': category.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier la catégorie</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="name{{ category.id }}" class="form-label">Nom</label>
+                                            <input type="text" class="form-control" id="name{{ category.id }}" name="name" value="{{ category.name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description{{ category.id }}" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description{{ category.id }}" name="description" rows="3" required>{{ category.description }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ category.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Modal de suppression #}
+                    <div class="modal fade" id="deleteCategory{{ category.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_categories_delete', {'id': category.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmer la suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir supprimer la catégorie <strong>{{ category.name }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Modal d'ajout #}
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ path('admin_categories_new') }}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter une catégorie</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newName" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="newName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="newDescription" name="description" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_category') }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

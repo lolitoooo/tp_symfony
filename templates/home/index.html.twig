@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bienvenue sur Event Manager{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% if app.user %}
+        <div class="alert alert-info mt-4">
+            <p>Bienvenue {{ app.user.name }} {{ app.user.lastname }}</p>
+            <p>Votre rôle : 
+                {% if is_granted('ROLE_ADMIN') %}
+                    <span class="badge bg-danger">Administrateur</span>
+                {% elseif is_granted('ROLE_BANNED') %}
+                    <span class="badge bg-dark">Banni</span>
+                {% else %}
+                    <span class="badge bg-primary">Utilisateur</span>
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+    <div class="hero-section text-center">
+        <h1 class="display-4 mb-4">Bienvenue sur Event Manager</h1>
+        <p class="lead mb-4">Découvrez et gérez vos événements en toute simplicité.</p>
+        <div class="mt-4">
+            {% if app.user %}
+                <a class="btn btn-light btn-lg me-3" href="{{ path('app_event_index') }}">
+                    <i class="fas fa-calendar-alt me-2"></i>Voir les événements
+                </a>
+            {% else %}
+                <a class="btn btn-light btn-lg me-3" href="{{ path('app_login') }}">
+                    <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                </a>
+                <a class="btn btn-outline-light btn-lg" href="{{ path('app_register') }}">
+                    <i class="fas fa-user-plus me-2"></i>S'inscrire
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4 mt-4">
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-calendar-alt feature-icon"></i>
+                <h3>Événements</h3>
+                <p>Découvrez les événements à venir et créez les vôtres. Organisez des rencontres inoubliables et participez à des moments uniques.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-map-marker-alt feature-icon"></i>
+                <h3>Lieux</h3>
+                <p>Explorez les différents lieux où se déroulent les événements. Trouvez l'endroit parfait pour votre prochain rassemblement.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-users feature-icon"></i>
+                <h3>Activités</h3>
+                <p>Participez à diverses activités lors des événements. Rencontrez de nouvelles personnes et partagez des expériences enrichissantes.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5 mb-5">
+        <h2 class="mb-4">Pourquoi nous choisir ?</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <h4>Sécurisé</h4>
+                    <p>Vos données sont protégées</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <h4>Rapide</h4>
+                    <p>Interface intuitive et réactive</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt feature-icon"></i>
+                    <h4>Responsive</h4>
+                    <p>Fonctionne sur tous les appareils</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-clock feature-icon"></i>
+                    <h4>24/7</h4>
+                    <p>Disponible à tout moment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

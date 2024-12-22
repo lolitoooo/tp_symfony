@@ -1,0 +1,196 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Gestion des activités{% endblock %}
+
+{% block admin_title %}Gestion des activités{% endblock %}
+
+{% block admin_actions %}
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+            <i class="fas fa-plus me-1"></i> Ajouter une activité
+        </button>
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Durée (min)</th>
+                    <th>Max participants</th>
+                    <th>Prix</th>
+                    <th>Catégorie</th>
+                    <th>Organisateur</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity.id }}</td>
+                        <td>{{ activity.name }}</td>
+                        <td>{{ activity.description|slice(0, 50) }}...</td>
+                        <td>{{ activity.duration }}</td>
+                        <td>{{ activity.maxParticipants }}</td>
+                        <td>{{ activity.price }}€</td>
+                        <td>{{ activity.category.name }}</td>
+                        <td>{{ activity.organizer.name }} {{ activity.organizer.lastname }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-primary" title="Éditer"
+                                        data-bs-toggle="modal" data-bs-target="#editActivity{{ activity.id }}Modal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#deleteActivity{{ activity.id }}Modal">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# Modal d'édition #}
+                    <div class="modal fade" id="editActivity{{ activity.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_activities_edit', {'id': activity.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier l'activité</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="name{{ activity.id }}" class="form-label">Nom</label>
+                                            <input type="text" class="form-control" id="name{{ activity.id }}" name="name" value="{{ activity.name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description{{ activity.id }}" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description{{ activity.id }}" name="description" rows="3" required>{{ activity.description }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="duration{{ activity.id }}" class="form-label">Durée (minutes)</label>
+                                            <input type="number" class="form-control" id="duration{{ activity.id }}" name="duration" value="{{ activity.duration }}" required min="1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="maxParticipants{{ activity.id }}" class="form-label">Nombre maximum de participants</label>
+                                            <input type="number" class="form-control" id="maxParticipants{{ activity.id }}" name="maxParticipants" value="{{ activity.maxParticipants }}" required min="1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="price{{ activity.id }}" class="form-label">Prix</label>
+                                            <input type="number" class="form-control" id="price{{ activity.id }}" name="price" value="{{ activity.price }}" required min="0" step="0.01">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="category{{ activity.id }}" class="form-label">Catégorie</label>
+                                            <select class="form-control" id="category{{ activity.id }}" name="category_id" required>
+                                                {% for category in categories %}
+                                                    <option value="{{ category.id }}" {% if category.id == activity.category.id %}selected{% endif %}>
+                                                        {{ category.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ activity.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Modal de suppression #}
+                    <div class="modal fade" id="deleteActivity{{ activity.id }}Modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ path('admin_activities_delete', {'id': activity.id}) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmer la suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir supprimer l'activité <strong>{{ activity.name }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Modal d'ajout #}
+    <div class="modal fade" id="addActivityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ path('admin_activities_new') }}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter une activité</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newName" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="newName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="newDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDuration" class="form-label">Durée (minutes)</label>
+                            <input type="number" class="form-control" id="newDuration" name="duration" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newMaxParticipants" class="form-label">Nombre maximum de participants</label>
+                            <input type="number" class="form-control" id="newMaxParticipants" name="maxParticipants" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPrice" class="form-label">Prix</label>
+                            <input type="number" class="form-control" id="newPrice" name="price" required min="0" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newCategory" class="form-label">Catégorie</label>
+                            <select class="form-control" id="newCategory" name="category_id" required>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_activity') }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
